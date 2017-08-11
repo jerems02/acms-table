@@ -31,6 +31,7 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
     isEmptyTable: boolean;
     ngOnInit(): void;
     ngOnChanges(): void;
+    reinit(): void;
     prepareTable(): void;
     applyFilter(): void;
     isEmpty(): void;
