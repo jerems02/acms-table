@@ -1,14 +1,9 @@
 import { OnInit, OnChanges, ChangeDetectorRef, EventEmitter } from '@angular/core';
-export declare class Item {
-    data: string;
-    isResponsive: boolean;
-    isTranslatable: boolean;
-    actions: any[];
-    constructor(data: any);
-}
+import { DomSanitizer } from "@angular/platform-browser";
 export declare class AcmsTableComponent implements OnInit, OnChanges {
     private _ref;
-    constructor(_ref: ChangeDetectorRef);
+    private _sanitizer;
+    constructor(_ref: ChangeDetectorRef, _sanitizer: DomSanitizer);
     config: any;
     collection: any[];
     rowSelected: EventEmitter<any>;
@@ -32,6 +27,22 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
     ngOnInit(): void;
     ngOnChanges(): void;
     reinit(): void;
+    /**
+     * Find the value of an element with is target (ex: object.property1...)
+     * It find through the element sent
+     * Returns false if there is no match
+     * @param target
+     * @param el
+     * @returns {null}
+     */
+    findTargetThroughObject(target: any, el: any): any;
+    /**
+     * Find the value for prepare one row
+     */
+    prepareOneRow(target: any, el: any): {
+        'translatable': boolean;
+        'objectFound': any;
+    };
     prepareTable(): void;
     applyFilter(): void;
     isEmpty(): void;
@@ -45,9 +56,14 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
     };
     showColumn(isResponsive: any): boolean;
     selectGlobalAction(evt: any): void;
-    sendEvent(type: any, rowId: any): void;
+    sendEvent(evt: any, type: any, rowId: any): void;
     updateSelectedRowsList(evt: any): void;
     resetMainSwitch(): void;
     deselectAll(): void;
     selectDeselectAll(evt: any): void;
+    /**
+     * Stop the propagation of event
+     * @param evt
+     */
+    stopPropagation(evt: any): void;
 }
