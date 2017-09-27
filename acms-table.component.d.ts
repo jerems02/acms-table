@@ -40,7 +40,7 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
      * Find the value for prepare one row
      */
     prepareOneRow(target: any, el: any): {
-        'translatable': boolean;
+        'translatable': any;
         'objectFound': any;
     };
     prepareTable(): void;

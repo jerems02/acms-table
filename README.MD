@@ -175,7 +175,7 @@ config = {
     "columns" : [
           {
             "title": "", // title in the header <th>
-            "is_translatable": false, // true if you want a translation with ng2-translate for title
+            "is_translatable": false, // true if you want a translation with ng2-translate for title (th) only
             "target": null, // no target for action cell
             "actions": ['select'], // select, update, delete
             "hideWithResponsiveView": false // hide this column if view smaller than breakpoint
@@ -195,16 +195,16 @@ config = {
 			"title": "Complete name",
 			"concat": ['name.last', 'name.first'], // if we want a concatenation of several targets
 			"is_translatable": false,
-			"is_sortable": true,
+			"translatableRow" : false, // if we want to translate with ng2-translate the cell value (not the title th! like not 'is_translatable') 
+			"is_sortable_by": 'gender', // if you are in multirows in the same cell, and you want to sort not by the main data but an other row (gender here)
 			"is_searchable": true,
 			"actions": null,
 			"hideWithResponsiveView": false,
 			"messageIfEmpty": "...",
 			"isMessageIfEmptyTranslatable": true,
 			"row" : { // if you want a value under the first row, for example, here display gender under complete name
-				"title": "",
 				"target": "gender",
-				"is_translatable": false,
+				"translatableRow": false,
 				"messageIfEmpty": "...",
 				"isMessageIfEmptyTranslatable": true
 				}
@@ -222,6 +222,7 @@ config = {
             "title": "Company",
             "target": "company",
             "is_translatable": false,
+			"translatableRow" : false,
             "is_sortable": true,
             "is_searchable": true,
             "actions": null,
@@ -330,9 +331,14 @@ The table has no style. If you want to add styles on the table, you can use an e
 
 ##  Change Log
 
+v1.3.0
+
+* Added translation on value not only on title
+* Added ability to sort by other value in the multirows cell
+
 v1.2.0
 
-* Add an event when we click on the row
+* Added an event when we click on the row
 * Added ability to add image/svg/url
 * Added abitity to add several line in the same td
 * Added abitily to call a method when you click on a td
