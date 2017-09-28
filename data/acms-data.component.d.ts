@@ -1,6 +1,6 @@
 import { OnInit, OnChanges } from "@angular/core";
 export declare class DataComponent implements OnInit, OnChanges {
-    row: any;
+    cell: any;
     constructor();
     ngOnInit(): void;
     ngOnChanges(): void;
@@ -15,5 +15,5 @@ export declare class DataComponent implements OnInit, OnChanges {
      * @param method
      * @param params
      */
-    genericClickMethod(evt: any, method: any, params: any, context: any): void;
+    genericClickMethod(evt: any, method: any, params: any, context: any, contextRow: any): void;
 }

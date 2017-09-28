@@ -9,5 +9,6 @@ export declare class Item {
     classRow: string;
     translatableRow: boolean;
     multirows: any[];
+    contextRow: any;
     constructor(data: any);
 }

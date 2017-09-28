@@ -9,7 +9,7 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
     rowSelected: EventEmitter<any>;
     emptyTableEvt: EventEmitter<boolean>;
     headers: any[];
-    targets: any[];
+    configRow: any[];
     results: any[];
     filteredResults: any[];
     displayedResults: any[];
@@ -37,12 +37,16 @@ export declare class AcmsTableComponent implements OnInit, OnChanges {
      */
     findTargetThroughObject(target: any, el: any): any;
     /**
-     * Find the value for prepare one row
+     * Find the value for prepare one cell
      */
-    prepareOneRow(target: any, el: any): {
+    prepareOneCell(cell: any, el: any): {
         'translatable': any;
         'objectFound': any;
     };
+    /**
+     * Prepare the header and the config for each column
+     * and populate the cell (td)
+     */
     prepareTable(): void;
     applyFilter(): void;
     isEmpty(): void;

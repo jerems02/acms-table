@@ -22,19 +22,6 @@ var Item = (function () {
     return Item;
 }());
 
-var Row = (function () {
-    /**
-     * @param {?} data
-     */
-    function Row(data) {
-        this.isTranslatable = false;
-        this.type = 'text'; // svg, img, url, html, function or text
-        this.config = null;
-        this.data = data;
-    }
-    return Row;
-}());
-
 var AcmsTableComponent = (function () {
     /**
      * @param {?} _ref
@@ -45,7 +32,7 @@ var AcmsTableComponent = (function () {
         this._sanitizer = _sanitizer;
         this.rowSelected = new _angular_core.EventEmitter();
         this.emptyTableEvt = new _angular_core.EventEmitter();
-        this.targets = [];
+        this.configRow = [];
         this.results = [];
         this.filteredResults = [];
         this.displayedResults = [];
@@ -77,7 +64,7 @@ var AcmsTableComponent = (function () {
      */
     AcmsTableComponent.prototype.reinit = function () {
         this.headers = [];
-        this.targets = [];
+        this.configRow = [];
         this.results = [];
         this.filteredResults = [];
         this.displayedResults = [];
@@ -102,41 +89,41 @@ var AcmsTableComponent = (function () {
         return test;
     };
     /**
-     * Find the value for prepare one row
-     * @param {?} target
+     * Find the value for prepare one cell
+     * @param {?} cell
      * @param {?} el
      * @return {?}
      */
-    AcmsTableComponent.prototype.prepareOneRow = function (target, el) {
+    AcmsTableComponent.prototype.prepareOneCell = function (cell, el) {
         var _this = this;
-        var /** @type {?} */ translatable = target.translatableRow;
+        var /** @type {?} */ translatable = cell.translatableRow;
         var /** @type {?} */ objectFound;
         //find object
-        if (target.target !== null && !target.concat) {
-            objectFound = this.findTargetThroughObject(target.target, el);
+        if (cell.target !== null && !cell.concat) {
+            objectFound = this.findTargetThroughObject(cell.target, el);
             if (!objectFound) {
-                objectFound = target.messageIfEmpty;
-                if (target.isMessageIfEmptyTranslatable)
+                objectFound = cell.messageIfEmpty;
+                if (cell.isMessageIfEmptyTranslatable)
                     translatable = true;
-                if (target.type === 'html')
+                if (cell.type === 'html')
                     objectFound = this._sanitizer.sanitize(_angular_core.SecurityContext.HTML, objectFound);
-                if (target.type === 'img')
+                if (cell.type === 'img')
                     objectFound = this._sanitizer.sanitize(_angular_core.SecurityContext.URL, objectFound);
-                if (target.type === 'url')
+                if (cell.type === 'url')
                     objectFound = this._sanitizer.sanitize(_angular_core.SecurityContext.URL, objectFound);
-                if (target.type === 'svg')
+                if (cell.type === 'svg')
                     objectFound = this._sanitizer.bypassSecurityTrustHtml(objectFound);
             }
         }
         
-        if (!target.target && target.concat) {
+        if (!cell.target && cell.concat) {
             var /** @type {?} */ tempValues_1 = [];
-            target.concat.forEach(function (concatItem) {
+            cell.concat.forEach(function (concatItem) {
                 var /** @type {?} */ temp = _this.findTargetThroughObject(concatItem, el);
                 if (temp)
                     tempValues_1.push(temp);
             });
-            objectFound = tempValues_1.join(target.concatSeparator);
+            objectFound = tempValues_1.join(cell.concatSeparator);
         }
         return {
             'translatable': translatable,
@@ -144,6 +131,8 @@ var AcmsTableComponent = (function () {
         };
     };
     /**
+     * Prepare the header and the config for each column
+     * and populate the cell (td)
      * @return {?}
      */
     AcmsTableComponent.prototype.prepareTable = function () {
@@ -170,7 +159,7 @@ var AcmsTableComponent = (function () {
                 is_sortable: el.is_sortable,
                 is_sortable_by: el.is_sortable_by
             };
-            _this.targets.push(target);
+            _this.configRow.push(target);
             //which column is searchable
             if (el.is_searchable) {
                 _this.colsSearchable.push(index);
@@ -178,54 +167,63 @@ var AcmsTableComponent = (function () {
             return el;
         });
         /**
-         * we loop on collection to extract data on json, we use the targets array installed before
+         * we loop on collection to extract data on json, we use the configRow array installed before
          * to know for each item the target and if the element is responsive
          */
-        this.collection.forEach(function (el, index) {
-            var /** @type {?} */ row = {};
+        this.collection.forEach(function (row, index) {
+            var /** @type {?} */ tempRow = {}; // row formatted will be injected in results
+            var /** @type {?} */ contextRow = row;
             var /** @type {?} */ dataSort; // property used to the sort the column of the table
-            row.items = [];
-            row.id = _this.findTargetThroughObject(_this.config.global.target_id, el);
-            if (!row.id)
-                row.id = index;
-            _this.targets.forEach(function (target) {
-                var /** @type {?} */ mainRow = _this.prepareOneRow(target, el);
-                if (target.is_sortable)
-                    dataSort = mainRow.objectFound;
+            tempRow.items = [];
+            // get the id for row
+            tempRow.id = _this.findTargetThroughObject(_this.config.global.target_id, row);
+            if (!tempRow.id)
+                tempRow.id = index;
+            /**
+             * we loop on the config of Row for each cell for the future td
+             *
+             */
+            _this.configRow.forEach(function (cell) {
+                var /** @type {?} */ cellData = _this.prepareOneCell(cell, contextRow);
+                if (cell.is_sortable)
+                    dataSort = cellData.objectFound;
                 // multirows
                 var /** @type {?} */ multirows = [];
                 var /** @type {?} */ that = _this;
-                var /** @type {?} */ recursiveRows = function (newTarget) {
-                    var /** @type {?} */ tempRow = that.prepareOneRow(newTarget, el);
-                    if (!tempRow)
+                var /** @type {?} */ recursiveRows = function (embeddedCell) {
+                    var /** @type {?} */ tempCellData = that.prepareOneCell(embeddedCell, contextRow);
+                    if (!tempCellData)
                         return;
-                    var /** @type {?} */ row = new Row(tempRow.objectFound);
+                    var /** @type {?} */ row = {};
+                    row.data = tempCellData.objectFound;
                     // we check if a sub row is the target for the sort column
-                    if (target.is_sortable_by && newTarget.target === target.is_sortable_by)
-                        dataSort = tempRow.objectFound;
-                    row.isTranslatable = tempRow.translatable;
-                    row.type = newTarget.type;
-                    row.config = newTarget.config;
+                    if (cell.is_sortable_by && embeddedCell.target === cell.is_sortable_by)
+                        dataSort = tempCellData.objectFound;
+                    row.isTranslatable = tempCellData.translatable;
+                    row.type = embeddedCell.type;
+                    row.config = embeddedCell.config;
+                    row.contextRow = contextRow;
                     multirows.push(row);
                     // recursive
-                    if (newTarget.row)
-                        recursiveRows(newTarget.row);
+                    if (embeddedCell.row)
+                        recursiveRows(embeddedCell.row);
                 };
-                if (target.row) {
-                    recursiveRows(target.row);
+                if (cell.row) {
+                    recursiveRows(cell.row);
                 }
-                var /** @type {?} */ item = new Item((mainRow.objectFound) ? mainRow.objectFound : null);
+                var /** @type {?} */ item = new Item((cellData.objectFound) ? cellData.objectFound : null);
                 item.dataSort = dataSort;
-                item.actions = target.actions;
-                item.isResponsive = target.isResponsive;
-                item.type = target.type;
-                item.config = target.config;
-                item.classRow = target.classRow;
-                item.isTranslatable = mainRow.translatable;
+                item.actions = cell.actions;
+                item.isResponsive = cell.isResponsive;
+                item.type = cell.type;
+                item.config = cell.config;
+                item.classRow = cell.classRow;
+                item.isTranslatable = cellData.translatable;
                 item.multirows = multirows;
-                row.items.push(item);
+                item.contextRow = contextRow;
+                tempRow.items.push(item);
             });
-            _this.results.push(row);
+            _this.results.push(tempRow);
         });
     };
     /**
@@ -494,7 +492,7 @@ var AcmsTableComponent = (function () {
 AcmsTableComponent.decorators = [
     { type: _angular_core.Component, args: [{
                 selector: 'acms-table',
-                template: "<div *ngIf=\"config.global.search\"  class=\"tableSearchBox\" (keyup)=\"searchWithTerms($event, searchBox)\" > <span>{{ (config.global.isSearchLabelTranslatable) ? (config.global.searchLabel | translate) : (config.global.searchLabel) }}</span> <input type=\"text\" #searchBox placeholder=\"{{ (config.global.isPlaceHolderSearchTranslatable) ? (config.global.placeHolderSearch  | translate) : (config.global.placeHolderSearch) }}\" /> </div> <div *ngIf=\"config.global.group_actions && config.global.group_actions.length > 0\" class=\"tableGroupActions\"> <acms-switch [id]=\"main\" (switchEvent)=\"selectDeselectAll($event)\" id=\"main-switch\"></acms-switch> <select (change)=\"selectGlobalAction($event)\"> <option disabled select>Group Action</option> <option *ngFor=\"let action of config.global.group_actions\">{{ action }}</option> </select> </div> <table *ngIf=\"!isEmptyTable\"> <thead *ngIf=\"config.global.showHeaders\"> <tr> <ng-template ngFor let-header [ngForOf]=\"headers\" let-i=\"index\"> <th *ngIf=\"showColumn(header.hideWithResponsiveView)\"> {{ (header.is_translatable) ? (header.title  | translate) : (header.title) }} <span class=\"sortArrow\" *ngIf=\"header.is_sortable\"> <span class=\"sortArrowUp\" (click)=\"sort(i, 'ASC')\"> &#x25B2; </span> <span class=\"sortArrowDown\" (click)=\"sort(i, 'DESC')\"> &#x25BC; </span> </span> </th> </ng-template> </thead> <tbody> <tr *ngFor=\"let result of displayedResults\" (click)=\"(config.global.isEventOnRow) ? sendEvent($event,'onRow', result.id) : ''\"> <ng-template ngFor let-row [ngForOf]=\"result.items\"> <td *ngIf=\"row.actions && row.actions.length > 0\"> <ng-template ngFor let-action [ngForOf]=\"row.actions\"> <span *ngIf=\"action === 'select'\" class=\"actions action-select\"><span> <acms-switch [id]=\"result.id\" (switchEvent)=\"updateSelectedRowsList($event)\" class=\"item-switch\" (click)=\"stopPropagation($event)\"></acms-switch> </span></span> <span *ngIf=\"action === 'update'\" class=\"actions action-update\" (click)=\"sendEvent($event, 'update', result.id)\"><span>UPDATE</span></span> <span *ngIf=\"action === 'delete'\" class=\"actions action-delete\" (click)=\"sendEvent($event, 'delete', result.id)\"><span>DELETE</span></span> </ng-template> </td> <td *ngIf=\"!row.actions && showColumn(row.isResponsive)\" [ngClass]=\"row.classRow\"> <acms-data [row]=\"row\"></acms-data> <ng-template ngFor let-subrow [ngForOf]=\"row.multirows\"> <acms-data [row]=\"subrow\"></acms-data> </ng-template> </td> </ng-template> </tr> </tbody> <caption *ngIf=\"config.global.legend\"> {{ (config.global.isLegendTranslatable) ? (config.global.legend | translate) : (config.global.legend) }} </caption> </table> <div class=\"tablePagination\" *ngIf=\"config.global.pagination && !isEmptyTable\"> <span *ngFor=\"let page of collectionPage\" [ngClass]=\"(page.current)?'currentLinkPagination':''\"> <a href=\"#\" (click)=\"changePage(page.number)\">{{ page.name }}</a> </span> </div> <div id=\"acms-table-empty-message\" *ngIf=\"isEmptyTable\"> <div>{{ (config.global.isMessageIfEmptyTableTranslatable) ? (config.global.messageIfEmptyTable | translate) : (config.global.messageIfEmptyTable) }}</div> </div> ",
+                template: "<div *ngIf=\"config.global.search\"  class=\"tableSearchBox\" (keyup)=\"searchWithTerms($event, searchBox)\" > <span>{{ (config.global.isSearchLabelTranslatable) ? (config.global.searchLabel | translate) : (config.global.searchLabel) }}</span> <input type=\"text\" #searchBox placeholder=\"{{ (config.global.isPlaceHolderSearchTranslatable) ? (config.global.placeHolderSearch  | translate) : (config.global.placeHolderSearch) }}\" /> </div> <div *ngIf=\"config.global.group_actions && config.global.group_actions.length > 0\" class=\"tableGroupActions\"> <acms-switch [id]=\"main\" (switchEvent)=\"selectDeselectAll($event)\" id=\"main-switch\"></acms-switch> <select (change)=\"selectGlobalAction($event)\"> <option disabled select>Group Action</option> <option *ngFor=\"let action of config.global.group_actions\">{{ action }}</option> </select> </div> <table *ngIf=\"!isEmptyTable\"> <thead *ngIf=\"config.global.showHeaders\"> <tr> <ng-template ngFor let-header [ngForOf]=\"headers\" let-i=\"index\"> <th *ngIf=\"showColumn(header.hideWithResponsiveView)\"> {{ (header.is_translatable) ? (header.title  | translate) : (header.title) }} <span class=\"sortArrow\" *ngIf=\"header.is_sortable\"> <span class=\"sortArrowUp\" (click)=\"sort(i, 'ASC')\"> &#x25B2; </span> <span class=\"sortArrowDown\" (click)=\"sort(i, 'DESC')\"> &#x25BC; </span> </span> </th> </ng-template> </thead> <tbody> <tr *ngFor=\"let result of displayedResults\" (click)=\"(config.global.isEventOnRow) ? sendEvent($event,'onRow', result.id) : ''\"> <ng-template ngFor let-item [ngForOf]=\"result.items\"> <td *ngIf=\"item.actions && item.actions.length > 0\"> <ng-template ngFor let-action [ngForOf]=\"item.actions\"> <span *ngIf=\"action === 'select'\" class=\"actions action-select\"><span> <acms-switch [id]=\"result.id\" (switchEvent)=\"updateSelectedRowsList($event)\" class=\"item-switch\" (click)=\"stopPropagation($event)\"></acms-switch> </span></span> <span *ngIf=\"action === 'update'\" class=\"actions action-update\" (click)=\"sendEvent($event, 'update', result.id)\"><span>UPDATE</span></span> <span *ngIf=\"action === 'delete'\" class=\"actions action-delete\" (click)=\"sendEvent($event, 'delete', result.id)\"><span>DELETE</span></span> </ng-template> </td> <td *ngIf=\"!item.actions && showColumn(item.isResponsive)\" [ngClass]=\"item.classRow\"> <acms-data [cell]=\"item\"></acms-data> <ng-template ngFor let-subrow [ngForOf]=\"item.multirows\"> <acms-data [cell]=\"subrow\"></acms-data> </ng-template> </td> </ng-template> </tr> </tbody> <caption *ngIf=\"config.global.legend\"> {{ (config.global.isLegendTranslatable) ? (config.global.legend | translate) : (config.global.legend) }} </caption> </table> <div class=\"tablePagination\" *ngIf=\"config.global.pagination && !isEmptyTable\"> <span *ngFor=\"let page of collectionPage\" [ngClass]=\"(page.current)?'currentLinkPagination':''\"> <a href=\"#\" (click)=\"changePage(page.number)\">{{ page.name }}</a> </span> </div> <div id=\"acms-table-empty-message\" *ngIf=\"isEmptyTable\"> <div>{{ (config.global.isMessageIfEmptyTableTranslatable) ? (config.global.messageIfEmptyTable | translate) : (config.global.messageIfEmptyTable) }}</div> </div> ",
                 styles: [".currentLinkPagination a { font-weight: bold; } .actions { position: relative; top: -2px; } .action-update, .action-delete { display: inline-block; min-width: 16px ; height: 15px; margin-left: 10px; cursor: pointer; } /* .action-update span, .action-delete span { display: none; } .action-update:before { font-family: 'FontAwesome'; left: 0px; position: absolute; top: 2px; content: '\f040'; } .action-delete:before { font-family: 'FontAwesome'; left:0px; position: absolute; top: 2px; content: '\f1f8'; }*/ .multi-rows { display: flex; flex-direction: column; } acms-switch { position: relative; top: 4px; } "],
             },] },
 ];
@@ -543,15 +541,17 @@ var DataComponent = (function () {
      * @param {?} method
      * @param {?} params
      * @param {?} context
+     * @param {?} contextRow
      * @return {?}
      */
-    DataComponent.prototype.genericClickMethod = function (evt, method, params, context) {
+    DataComponent.prototype.genericClickMethod = function (evt, method, params, context, contextRow) {
         this.stopPropagation(evt);
         if (!params) {
             params = [];
         }
         var /** @type {?} */ newParams = params.slice();
         newParams.push(evt);
+        newParams.push(contextRow);
         if (context) {
             method.call(context, newParams);
         }
@@ -564,7 +564,7 @@ var DataComponent = (function () {
 DataComponent.decorators = [
     { type: _angular_core.Component, args: [{
                 selector: 'acms-data',
-                template: "<ng-container [ngSwitch]=\"row.type\" > <div *ngSwitchCase=\"'html'\" [innerHTML]=\"row.data\"> </div> <div *ngSwitchCase=\"'img'\"> <img *ngIf=\"!row.config.method && !row.config.url\" [src]=\"row.data\" [attr.height]=\"row.config.height\" [attr.width]=\"row.config.width\" /> <a class=\"imgClick\" *ngIf=\"row.config.method && !row.config.url\" (click)=\"genericClickMethod($event, row.config.method, row.config.params, row.config.context)\" ><img [src]=\"row.data\" [attr.height]=\"row.config.height\" [attr.width]=\"row.config.width\" /></a> <a class=\"imgURL\" *ngIf=\"!row.config.method && row.config.url\" [attr.href]=\"row.config.url\" [attr.target]=\"row.config.target\"><img [src]=\"row.data\" [attr.height]=\"row.config.height\" [attr.width]=\"row.config.width\" /></a> </div> <div *ngSwitchCase=\"'svg'\"> <span *ngIf=\"!row.config.method && !row.config.url\" [innerHTML]=\"row.data\"></span> <a class=\"svgClick\" *ngIf=\"row.config.method && !row.config.url\" (click)=\"genericClickMethod($event, row.config.method, row.config.params, row.config.context)\" ><span [innerHTML]=\"row.data\"></span></a> <a class=\"svgURL\" *ngIf=\"!row.config.method && row.config.url\" [attr.href]=\"row.config.url\" [attr.target]=\"row.config.target\"><span [innerHTML]=\"row.data\"></span></a> </div> <div *ngSwitchCase=\"'url'\"> <a (click)=\"stopPropagation($event)\" [attr.href]=\"(row.config.prefix) ? (row.config.prefix+row.data) : row.data\" [attr.title]=\"row.config.title\" [attr.target]=\"row.config.target\">{{ (row.config.content) ? ( ( row.config.isContentTranslatable ) ? (row.config.content | translate) : row.config.content ) : ( (row.config.prefix) ? (row.config.prefix+row.data) : row.data ) }}</a> </div> <div *ngSwitchCase=\"'function'\"> <a *ngIf=\"!row.isTranslatable\" class=\"functionClick\" (click)=\"genericClickMethod($event, row.config.method, row.config.params, row.config.context)\" >{{ row.data }}</a> <a *ngIf=\"row.isTranslatable\" class=\"functionClick\" (click)=\"genericClickMethod($event, row.config.method, row.config.params, row.config.context)\" >{{ row.data | translate }}</a> </div> <div *ngSwitchDefault> {{ (row.isTranslatable) ? (row.data | translate) : row.data }} </div> </ng-container>",
+                template: "<ng-container [ngSwitch]=\"cell.type\" > <div *ngSwitchCase=\"'html'\" [innerHTML]=\"cell.data\"> </div> <div *ngSwitchCase=\"'img'\"> <img *ngIf=\"!cell.config.method && !cell.config.url\" [src]=\"cell.data\" [attr.height]=\"cell.config.height\" [attr.width]=\"cell.config.width\" /> <a class=\"imgClick\" *ngIf=\"cell.config.method && !cell.config.url\" (click)=\"genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)\" ><img [src]=\"cell.data\" [attr.height]=\"cell.config.height\" [attr.width]=\"cell.config.width\" /></a> <a class=\"imgURL\" *ngIf=\"!cell.config.method && cell.config.url\" [attr.href]=\"cell.config.url\" [attr.target]=\"cell.config.target\"><img [src]=\"cell.data\" [attr.height]=\"cell.config.height\" [attr.width]=\"cell.config.width\" /></a> </div> <div *ngSwitchCase=\"'svg'\"> <span *ngIf=\"!cell.config.method && !cell.config.url\" [innerHTML]=\"cell.data\"></span> <a class=\"svgClick\" *ngIf=\"cell.config.method && !cell.config.url\" (click)=\"genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)\" ><span [innerHTML]=\"cell.data\"></span></a> <a class=\"svgURL\" *ngIf=\"!cell.config.method && cell.config.url\" [attr.href]=\"cell.config.url\" [attr.target]=\"cell.config.target\"><span [innerHTML]=\"cell.data\"></span></a> </div> <div *ngSwitchCase=\"'url'\"> <a (click)=\"stopPropagation($event)\" [attr.href]=\"(cell.config.prefix) ? (cell.config.prefix+cell.data) : cell.data\" [attr.title]=\"cell.config.title\" [attr.target]=\"cell.config.target\">{{ (cell.config.content) ? ( ( cell.config.isContentTranslatable ) ? (cell.config.content | translate) : cell.config.content ) : ( (cell.config.prefix) ? (cell.config.prefix+cell.data) : cell.data ) }}</a> </div> <div *ngSwitchCase=\"'function'\"> <a *ngIf=\"!cell.isTranslatable\" class=\"functionClick\" (click)=\"genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)\" >{{ cell.data }}</a> <a *ngIf=\"cell.isTranslatable\" class=\"functionClick\" (click)=\"genericClickMethod($event, cell.config.method, cell.config.params, cell.config.context, cell.contextRow)\" >{{ cell.data | translate }}</a> </div> <div *ngSwitchDefault> {{ (cell.isTranslatable) ? (cell.data | translate) : cell.data }} </div> </ng-container>",
                 styles: [""],
             },] },
 ];
@@ -573,7 +573,7 @@ DataComponent.decorators = [
  */
 DataComponent.ctorParameters = function () { return []; };
 DataComponent.propDecorators = {
-    'row': [{ type: _angular_core.Input },],
+    'cell': [{ type: _angular_core.Input },],
 };
 
 var AcmsTableModule = (function () {
