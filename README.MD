@@ -323,6 +323,35 @@ The table has no style. If you want to add styles on the table, you can use an e
 
 /*...*/
 
+## Stylisize table cells
+
+### for a row
+
+If you want to put a style on a row, put a property "target_classLine" on config.global
+e.g : config.global.target_classLine = 'classLine'
+And in collection data
+put property "classLine" in object
+e.g : { "classLine": "red"} red is the css class .red
+
+### for a column
+
+In config.global.columns "classRow": 'my-class'
+e.g: classRow: 'my-class' it will add a class on each td of the column
+
+### for a specific cell
+
+In collection data, add a property "styleCell", this object take in properties the keys of the target column.
+The key is the property "key" in config.columns[x].key
+Then this key take 2 properties
+"className" that is a string for the css class value and "isApplied" that is a boolean to know if we want to apply this style on the cell or not, usefull if you have condition to display this style.
+e.g:
+"styleCell": {
+    "email": {
+        "className": 'blue',
+        "isApplied": true
+    }
+}
+
 ```
 
 ## License
@@ -330,6 +359,11 @@ The table has no style. If you want to add styles on the table, you can use an e
 © ACMS - [jerems02](mailto:jeremie.stezycki@sylpheo.com)
 
 ##  Change Log
+
+v1.4.0
+
+* Added ability to add css class on a row
+* Added ability to add css class on a specific cell
 
 v1.3.0
 

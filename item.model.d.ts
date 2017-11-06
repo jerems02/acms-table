@@ -10,5 +10,8 @@ export declare class Item {
     translatableRow: boolean;
     multirows: any[];
     contextRow: any;
+    target: string;
+    key: any;
+    styleCell: any;
     constructor(data: any);
 }
