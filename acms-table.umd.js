@@ -177,7 +177,7 @@ var AcmsTableComponent = (function () {
             var /** @type {?} */ dataSort; // property used to the sort the column of the table
             tempRow.items = [];
             // get the id for row
-            tempRow.id = _this.findTargetThroughObject(_this.config.global.target_id, row);
+            tempRow.id = _this.findTargetThroughObject((_this.config.global.target_id) ? _this.config.global.target_id : '', row);
             if (!tempRow.id)
                 tempRow.id = index;
             //get the class for the row (line)
