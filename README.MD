@@ -353,8 +353,6 @@ e.g:
     }
 }
 
-```
-
 ## License
 
 © ACMS - [jerems02](mailto:jeremie.stezycki@sylpheo.com)
