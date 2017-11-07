@@ -181,7 +181,7 @@ var AcmsTableComponent = (function () {
             if (!tempRow.id)
                 tempRow.id = index;
             //get the class for the row (line)
-            tempRow.classLine = _this.findTargetThroughObject(_this.config.global.target_classLine, row);
+            tempRow.classLine = _this.findTargetThroughObject((_this.config.global.target_classLine) ? _this.config.global.target_classLine : '', row);
             /**
              * we loop on the config of Row for each cell for the future td
              *

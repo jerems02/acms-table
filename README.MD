@@ -360,6 +360,9 @@ e.g:
 
 ##  Change Log
 
+v1.4.x
+* Bug fix
+
 v1.4.0
 
 * Added ability to add css class on a row
