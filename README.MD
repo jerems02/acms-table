@@ -322,6 +322,7 @@ The table has no style. If you want to add styles on the table, you can use an e
 }
 
 /*...*/
+```
 
 ## Stylisize table cells
 
