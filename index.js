@@ -46,6 +46,7 @@ var AcmsTableComponent = (function () {
      * @return {?}
      */
     AcmsTableComponent.prototype.ngOnInit = function () {
+        console.log('test');
         this.eventResize = this.addResizeEvent();
     };
     /**
