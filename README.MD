@@ -355,9 +355,12 @@ e.g:
 
 ## License
 
-© ACMS - [jerems02](mailto:jeremie.stezycki@sylpheo.com)
+? ACMS - [jerems02](mailto:jeremie.stezycki@sylpheo.com)
 
 ##  Change Log
+
+v2.0.0
+* Change ng2-translate for ngx-translate
 
 v1.4.x
 * Bug fix

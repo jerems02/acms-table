@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, NgModule, Output, SecurityContext } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
-import { TranslateModule } from 'ng2-translate/index';
+import { TranslateModule } from '@ngx-translate/core';
 import { AcmsSwitchModule } from 'acms-switch';
 
 var Item = (function () {
@@ -46,7 +46,6 @@ var AcmsTableComponent = (function () {
      * @return {?}
      */
     AcmsTableComponent.prototype.ngOnInit = function () {
-        console.log('test');
         this.eventResize = this.addResizeEvent();
     };
     /**
@@ -362,7 +361,6 @@ var AcmsTableComponent = (function () {
      */
     AcmsTableComponent.prototype.searchWithTerms = function (event, el) {
         var _this = this;
-        var /** @type {?} */ keyCode = event.keyCode;
         var /** @type {?} */ searchTerm = el.value;
         var /** @type {?} */ temp = [];
         this.results.forEach(function (el) {

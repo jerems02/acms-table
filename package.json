@@ -1,6 +1,6 @@
 {
   "name": "acms-table",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "author": {
     "name": "jerems02",
     "email": "jeremie.stezycki@sylpheo.com"
@@ -16,10 +16,10 @@
   "peerDependencies": {
     "@angular/core": "^4.0.0",
     "rxjs": "^5.1.0",
-    "zone.js": "^0.8.4"
+    "zone.js": "^0.8.4",
+    "@ngx-translate/core": "^8.0.0"
   },
   "dependencies": {
-    "acms-switch": "git+https://github.com/jerems02/acms-switch.git",
-    "ng2-translate": "^5.0.0"
+    "acms-switch": "git+https://github.com/jerems02/acms-switch.git"
   }
 }
