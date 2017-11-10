@@ -14,7 +14,7 @@
   "jsnext:main": "acms-table.js",
   "typings": "acms-table.d.ts",
   "peerDependencies": {
-    "@angular/core": "^4.0.0",
+    "@angular/core": "^4.0.0 || ^5.0.0",
     "rxjs": "^5.1.0",
     "zone.js": "^0.8.4",
     "@ngx-translate/core": "^8.0.0"
